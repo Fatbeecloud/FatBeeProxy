@@ -1,0 +1,121 @@
+# 胖蜜蜂云：云端编译测试版 APK（推送到 main 或手动点 Run workflow 时运行）
+# 参照原作者的 build.yml，去掉了正式签名和发布步骤；正式签名留到发布阶段再加（密钥放 GitHub Secrets，不进仓库）。
+name: FatBee test build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    # 只改文档时不编译
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v7
+      with:
+        submodules: 'recursive'
+        fetch-depth: '0'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v4
+      with:
+        log-accepted-android-sdk-licenses: false
+        cmdline-tools-version: '14742923'
+        packages: 'platforms;android-37.0 build-tools;37.0.0 platform-tools'
+
+    - name: Install NDK
+      run: |
+        echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+          --channel=0 \
+          --install "ndk;30.0.16248370"
+        echo "NDK_HOME=$ANDROID_HOME/ndk/30.0.16248370" >> $GITHUB_ENV
+
+    - name: Restore cached libhevtun
+      id: cache-libhevtun
+      uses: actions/cache@v4
+      with:
+        path: ${{ github.workspace }}/libs
+        key: libhevtun-${{ runner.os }}-ndk30-${{ hashFiles('.git/modules/hev-socks5-tunnel/HEAD') }}-${{ hashFiles('compile-hevtun.sh') }}
+
+    - name: Build libhevtun
+      if: steps.cache-libhevtun.outputs.cache-hit != 'true'
+      run: bash compile-hevtun.sh
+
+    - name: Copy libhevtun
+      run: cp -r ${{ github.workspace }}/libs ${{ github.workspace }}/V2rayNG/app
+
+    - name: Fetch AndroidLibXrayLite tag
+      run: |
+        pushd AndroidLibXrayLite
+        echo "CURRENT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+        popd
+
+    - name: Download libv2ray
+      uses: robinraju/release-downloader@v1.13
+      with:
+        repository: '2dust/AndroidLibXrayLite'
+        tag: ${{ env.CURRENT_TAG }}
+        fileName: 'libv2ray.aar'
+        out-file-path: V2rayNG/app/libs/
+
+    - name: Setup Java
+      uses: actions/setup-java@v6.1.0
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+
+    # 测试版用安卓通用的“调试签名”（密码就是公开的 android，不是秘密）。
+    # 第一次编译时生成并缓存，以后每次都用同一个，手机上可以直接覆盖安装新测试版、不丢登录。
+    # 正式版另用正式签名（放 GitHub Secrets，不进仓库）。
+    - name: Restore test signing key
+      id: cache-testkey
+      uses: actions/cache@v4
+      with:
+        path: ~/fatbee-test.keystore
+        key: fatbee-test-keystore-v1
+
+    - name: Create test signing key
+      if: steps.cache-testkey.outputs.cache-hit != 'true'
+      run: |
+        keytool -genkeypair -keystore ~/fatbee-test.keystore -storepass android -keypass android \
+          -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
+          -dname "CN=FatBeeCloud Test,O=FatBeeCloud,C=CA"
+
+    - name: Run FatBee unit tests
+      run: |
+        cd ${{ github.workspace }}/V2rayNG
+        echo "sdk.dir=${ANDROID_HOME}" > local.properties
+        chmod 755 gradlew
+        ./gradlew testPlaystoreDebugUnitTest --tests 'com.v2ray.ang.fatbee.*'
+
+    - name: Build test APK
+      env:
+        FATBEE_ACCOUNT_SUFFIX: ${{ secrets.FATBEE_ACCOUNT_SUFFIX }}
+        FATBEE_ADMIN_CODE_SHA256: ${{ secrets.FATBEE_ADMIN_CODE_SHA256 }}
+      run: |
+        cd ${{ github.workspace }}/V2rayNG
+        echo "sdk.dir=${ANDROID_HOME}" > local.properties
+        chmod 755 gradlew
+        ./gradlew assemblePlaystoreDebug -PABI_FILTERS="arm64-v8a;armeabi-v7a" \
+          -PfatbeeAccountSuffix="$FATBEE_ACCOUNT_SUFFIX" -PfatbeeAdminCodeSha256="$FATBEE_ADMIN_CODE_SHA256" \
+          -Pandroid.injected.signing.store.file=$HOME/fatbee-test.keystore \
+          -Pandroid.injected.signing.store.password=android \
+          -Pandroid.injected.signing.key.alias=androiddebugkey \
+          -Pandroid.injected.signing.key.password=android
+
+    - name: Upload test APK
+      uses: actions/upload-artifact@v7
+      with:
+        name: fatbee-test-apk
+        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/debug/*.apk
+        retention-days: 14
