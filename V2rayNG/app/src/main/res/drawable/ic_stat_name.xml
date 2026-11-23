@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FatBeeCloud 通知栏小图标：白色蜜蜂剪影 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="64" android:viewportHeight="64">
+    <group android:rotation="-10" android:pivotX="32" android:pivotY="36">
+        <path android:fillColor="#FFFFFFFF" android:pathData="M29.6,31.2C20.4,27.6 14.6,17.2 19.8,11.2c5.6,-5.2 12.6,3.4 13.6,19.6z" />
+        <path android:fillColor="#FFFFFFFF" android:pathData="M33.6,30.6c-2.8,-8.6 -0.2,-20.4 6.6,-20.6 6.8,0.8 5,13.6 -2.6,20.6z" />
+        <path android:fillColor="#FFFFFFFF" android:pathData="M12.2,37.2L6.4,39.6l5.8,2.4z" />
+        <group>
+            <clip-path android:pathData="M11,39.6a20,14 0,1 0,40 0a20,14 0,1 0,-40 0z" />
+            <path android:fillColor="#FFFFFFFF" android:pathData="M0,22h18.6v36h-18.6zM26.8,22h2.6v36h-2.6zM37.6,22h26.4v36h-26.4z" />
+        </group>
+        <path android:strokeColor="#FFFFFFFF" android:strokeWidth="2.5" android:strokeLineCap="round" android:pathData="M45.2,27.6Q47.4,21.2 54,20.6" />
+    </group>
+</vector>

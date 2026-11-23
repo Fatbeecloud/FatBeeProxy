@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FatBeeCloud 完整 Logo，与官网 bee.svg 一致 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp" android:height="64dp"
+    android:viewportWidth="64" android:viewportHeight="64">
+    <path android:fillColor="#12110D" android:pathData="M15,0h34a15,15 0,0 1,15 15v34a15,15 0,0 1,-15 15h-34a15,15 0,0 1,-15 -15v-34a15,15 0,0 1,15 -15z" />
+    <group>
+        <group android:rotation="-10" android:pivotX="32" android:pivotY="36">
+            <path android:fillColor="#FFF6DD" android:pathData="M29.6,31.2C20.4,27.6 14.6,17.2 19.8,11.2c5.6,-5.2 12.6,3.4 13.6,19.6z" />
+            <path android:fillColor="#E6DAB9" android:pathData="M33.6,30.6c-2.8,-8.6 -0.2,-20.4 6.6,-20.6 6.8,0.8 5,13.6 -2.6,20.6z" />
+            <path android:fillColor="#FFC530" android:pathData="M12.2,37.2L6.4,39.6l5.8,2.4z" />
+            <path android:fillColor="#FFC530" android:pathData="M11,39.6a20,14 0,1 0,40 0a20,14 0,1 0,-40 0z" />
+            <group>
+                <clip-path android:pathData="M11,39.6a20,14 0,1 0,40 0a20,14 0,1 0,-40 0z" />
+                <path android:fillColor="#12110D" android:pathData="M19.6,22h6.2v36h-6.2zM30.4,22h6.2v36h-6.2z" />
+            </group>
+            <path android:fillColor="#12110D" android:pathData="M43,37.4a2.4,2.4 0,1 0,4.8 0a2.4,2.4 0,1 0,-4.8 0z" />
+            <path android:strokeColor="#FFC530" android:strokeWidth="2.5" android:strokeLineCap="round" android:pathData="M45.2,27.6Q47.4,21.2 54,20.6" />
+        </group>
+    </group>
+</vector>
