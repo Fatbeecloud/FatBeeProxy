@@ -42,7 +42,7 @@ jobs:
 
     - name: Restore cached libhevtun
       id: cache-libhevtun
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ${{ github.workspace }}/libs
         key: libhevtun-${{ runner.os }}-ndk30-${{ hashFiles('.git/modules/hev-socks5-tunnel/HEAD') }}-${{ hashFiles('compile-hevtun.sh') }}
@@ -79,7 +79,7 @@ jobs:
     # 正式版另用正式签名（放 GitHub Secrets，不进仓库）。
     - name: Restore test signing key
       id: cache-testkey
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ~/fatbee-test.keystore
         key: fatbee-test-keystore-v1
